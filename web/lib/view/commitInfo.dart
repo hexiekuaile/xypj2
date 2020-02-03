@@ -51,7 +51,7 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
       return ListTile(
           leading: Icon(Icons.info),
           title: Text(m.name),
-          //点击drawer菜单，立即从数据库中提取相对应的信息，显示在body表中
+          //点击drawer菜单，立即从数据库中提取相对应的信息，显示在body表中//
           onTap: () {
             _selectedMetaInfo = m;
             _body = _futureBodyTable(m);
