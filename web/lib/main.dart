@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:web/view/commitInfo.dart';
 import 'package:web/view/commitMetaInfo.dart';
 import 'package:web/view/viewDanWeiFenShu.dart';
@@ -8,10 +9,12 @@ import 'view/childItemView.dart';
 import 'm.dart';
 import 'view/viewDanWei.dart';
 import 'view/viewZhiBiao.dart';
+import 'i18n.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  I18nDelegate i18nDelegate = new I18nDelegate(null);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -22,6 +25,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: HomePage(),
+      supportedLocales: I18nDelegate.supportedLocales,
+      localizationsDelegates: [
+        //修改这个变量、setState，可以更改UI语言文字
+        i18nDelegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
     );
   }
 }
@@ -34,6 +44,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 //当前显示页面的
   int currentIndex = 0;
+  Strings strings;
 
   //点击导航项是要显示的页面
   final pages = [
@@ -42,11 +53,10 @@ class _HomePageState extends State<HomePage> {
     ViewDanwei(), //显式单位表
     ViewZhiBiaoFenShu(), //显式指标分数表
     ViewDanWeiFenShu(), //显式单位分数表
-    new CommitMetaInfo() ,//提交基本信息视图
+    new CommitMetaInfo(), //提交基本信息视图
     new CommitInfo(),
-
   ];
-  final menus = [
+  var menus = [
     BottomNavigationBarItem(icon: Icon(Icons.home), title: Text('首页')),
     BottomNavigationBarItem(icon: Icon(Icons.music_video), title: Text('指标')),
     BottomNavigationBarItem(icon: Icon(Icons.music_video), title: Text('单位')),
@@ -59,6 +69,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    strings = Strings.of(context);
+    print("'''''''''''''''");
+    print(strings.valueOf('firstPage'));
     return Scaffold(
       body: PageView(
         controller: pageController,
