@@ -43,6 +43,7 @@ class Strings {
   }
 
   String valueOf(String key, {List<String> args, Map<String, dynamic> namedArgs}) {
+    String value;
     //支持json嵌套，比如key=a.b.c
     if (key.contains('.')) {
       List<String> list = key.split('.');
@@ -50,18 +51,24 @@ class Strings {
       for (var i = 0; i < list.length; i++) {
         if (!((map as Map).containsKey(list[i]))) return key;
         map = (map as Map)[list[i]];
-        if (i < list.length - 1 && !(map is Map)) return key;
-        if (i == list.length - 1 && (map is Map)) return key;
-        if (i == list.length - 1 && !(map is Map)) return map.toString();
+        if (i < list.length - 1) {
+          if (!(map is Map)) return key;
+        } else if (i == list.length - 1) {
+          if (map is Map)
+            return key;
+          else
+            value = map.toString();
+        }
       }
     }
     //以下json不嵌套
     //如果json文件不存在key，则返回key
-    if (!_map.containsKey(key)) return key;
-
-    String value = _map[key].toString();
+    else {
+      if (!_map.containsKey(key)) return key;
+      value = _map[key].toString();
+    }
     //支持字符串替换
-    value = _interpolateValue(value, args, namedArgs);
+    if (args != null && namedArgs != null) value = _interpolateValue(value, args, namedArgs);
     return value;
   }
 
@@ -104,7 +111,7 @@ class I18nDelegate extends LocalizationsDelegate<Strings> {
     _loc = _loc ?? locale;
     Strings strings = await Strings.load(_loc);
 
-    _setSupportedLocales(strings.valueOf("supportedLocales"));
+    //_setSupportedLocales(strings.valueOf("supportedLocales"));
     return strings;
   }
 

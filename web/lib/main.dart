@@ -70,8 +70,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     strings = Strings.of(context);
-    print("'''''''''''''''");
-    print(strings.valueOf('firstPage'));
     return Scaffold(
       body: PageView(
         controller: pageController,
