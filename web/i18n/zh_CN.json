@@ -7,5 +7,15 @@
     "c": {
       "d": "sdf"
     }
+  },
+  "commitMetaInfo": {
+    "add": "增加",
+    "del": "删除",
+    "save": "保存"
+  },
+  "commitInfo": {
+    "commit": "录入  ",
+    "info": "信息",
+    "URL_FindMetaInfoByType": "http://localhost:1112/metaInfo/type/"
   }
 }

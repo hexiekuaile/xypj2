@@ -1,10 +1,10 @@
-import 'dart:html';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:web/m.dart';
+import 'package:web/i18n.dart';
 
-//提交基础信息视图
+//提交保存基础信息视图
 class CommitMetaInfo extends StatefulWidget {
   @override
   _CommitMetaInfoState createState() => _CommitMetaInfoState();
@@ -129,7 +129,10 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
               color: Colors.blue, //文字颜色
             ),
             validator: (val) {
-              if (val.trim().isEmpty) return '不能为空';
+              if (val.trim().isEmpty)
+                return '不能为空';
+              else
+                return null;
             },
             onSaved: (val) {
               _title = val;
@@ -158,7 +161,7 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
       heightFactor: 2,
       child: new RaisedButton.icon(
         icon: Icon(Icons.add, size: 25.0),
-        label: Text('增加'),
+        label: Text("增加"),
         color: Colors.blue,
         textColor: Colors.white,
         onPressed: () {
@@ -176,7 +179,7 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
       heightFactor: 2,
       child: RaisedButton(
         padding: EdgeInsets.all(15.0),
-        child: Text('登录'),
+        child: Text("保存"),
         color: Colors.blue,
         textColor: Colors.white,
         onPressed: this._forSubmitted,
@@ -209,7 +212,10 @@ class _RowMetaState extends State<Row_meta> {
           labelText: '名称',
         ),
         validator: (val) {
-          if (val.trim().isEmpty) return '不能为空';
+          if (val.trim().isEmpty)
+            return '不能为空';
+          else
+            return null;
         },
         onSaved: (val) {
           widget._name = val;
@@ -247,7 +253,7 @@ class _RowMetaState extends State<Row_meta> {
       )),
       new RaisedButton.icon(
         icon: Icon(Icons.remove, size: 25.0),
-        label: Text('删除'),
+        label: Text("删除"),
         color: Colors.blue,
         textColor: Colors.white,
         onPressed: () {

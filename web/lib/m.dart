@@ -38,6 +38,6 @@ class M {
   //信息定义
   static const String xinxidingyi = '信息定义';
   static const String metaInfoGetNameUrl = 'http://localhost:1112/metaInfo/name/';
-  static const String URL_FindMetaInfoByTypeUrl = 'http://localhost:1112/metaInfo/type/';
+  static const String URL_FindMetaInfoByType = 'http://localhost:1112/metaInfo/type/';
 
 }

@@ -1,11 +1,11 @@
-import 'dart:html';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:web/domain/info.dart';
 import 'package:web/m.dart';
+import 'package:web/i18n.dart';
 
-//提交信息视图
+//录入、提交信息视图
 class CommitInfo extends StatefulWidget {
   @override
   _CommitInfoState createState() => _CommitInfoState();
@@ -14,7 +14,7 @@ class CommitInfo extends StatefulWidget {
 class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMixin {
   //GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   List<Info> _menusMetaInfo;
-  List<Info> _tableInfo;
+  List<Info> _bodyTableInfo;
   Info _selectedMetaInfo;
   Dio _dio;
   Drawer _drawer;
@@ -36,12 +36,12 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
   }
 
   get _appbar => AppBar(
-        title: Text('录入 ' + (_selectedMetaInfo == null ? '信息' : _selectedMetaInfo.name)),
+        title: Text(Strings.of(context).valueOf("commitInfo.commit") + (_selectedMetaInfo == null ? Strings.of(context).valueOf("commitInfo.info") : _selectedMetaInfo.name)),
       );
 
   //从数据库中提取基础信息，作为 drawer 菜单
   Future _fetchMenus() async {
-    var response = await _dio.get(M.URL_FindMetaInfoByTypeUrl + '基础信息');
+    var response = await _dio.get(M.URL_FindMetaInfoByType + '基础信息');
     if (response.statusCode != HttpStatus.ok) return null;
     _menusMetaInfo = (response.data as List<dynamic>).map<Info>((m) {
       return Info.fromJson((m as Map<String, dynamic>));
@@ -66,15 +66,16 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
     setState(() {});
   }
 
-  //提取表信息，即从数据库中提取信息，填充到body中的表
-  Future<List<Info>> _fetchTableMetaInfo(Info seletedMetaInfo) async {
-    var response = await _dio.get(M.URL_FindMetaInfoByTypeUrl + seletedMetaInfo.name);
+  //通过选定的基础信息名称，从数据库中提取基础信息的一般信息，填充到body中的表。
+  //例如，通过 评价指标 这个名称，获取所有的评价指标
+  Future<List<Info>> _fetchBodyTableInfo(Info seletedMetaInfo) async {
+    var response = await _dio.get(M.URL_FindMetaInfoByType + seletedMetaInfo.name);
     if (response.statusCode != HttpStatus.ok) return null;
-    _tableInfo = (response.data as List<dynamic>).map<Info>((m) {
+    _bodyTableInfo = (response.data as List<dynamic>).map<Info>((m) {
       return Info.fromJson((m as Map<String, dynamic>));
     }).toList();
-    if (_tableInfo == null) _tableInfo = <Info>[];
-    return _tableInfo;
+    if (_bodyTableInfo == null) _bodyTableInfo = <Info>[];
+    return _bodyTableInfo;
   }
 
   /*
@@ -85,7 +86,7 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
     */
   FutureBuilder<List<Info>> _futureBodyTable(Info selectedMetaInfo) {
     return FutureBuilder<List<Info>>(
-      future: _fetchTableMetaInfo(selectedMetaInfo),
+      future: _fetchBodyTableInfo(selectedMetaInfo),
       builder: (BuildContext context, AsyncSnapshot<List<Info>> snapshot) {
         if (snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.active || snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -101,7 +102,7 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
   }
 
   Widget _BodyTable(Info selectedMetaInfo, List<Info> list) {
-    List<Info> _rowsMetaInfo = list == null ? <CommitInfo>[] : list;
+    List<Info> _rowsInfo = list == null ? <Info>[] : list;
     List<String> _colNames = selectedMetaInfo.map.keys.toList();
     int _defalutRowPageCount = PaginatedDataTable.defaultRowsPerPage; //默认一页行数
     //分页表
@@ -116,10 +117,11 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
       initialFirstRowIndex: 0,
       availableRowsPerPage: [
         5,
-        10
+        10,
+        20
       ],
       columns: _getCols(_colNames),
-      source: BodyTableSource(_colNames, _rowsMetaInfo),
+      source: BodyTableSource(_colNames, _rowsInfo),
     ));
   }
 
@@ -132,23 +134,23 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
 
 class BodyTableSource extends DataTableSource {
   List<String> _colNames;
-  List<Info> _rowsMetaInfo;
+  List<Info> _rowsInfo;
 
-  BodyTableSource(this._colNames, this._rowsMetaInfo);
+  BodyTableSource(this._colNames, this._rowsInfo);
 
   //一行所有单元格
-  List<DataCell> _getDataCells(Info rowMetaInfo) {
+  List<DataCell> _getRow(Info rowInfo) {
     return _colNames.map<DataCell>((txt) {
-      return DataCell(Text(rowMetaInfo.map[txt]));
+      return DataCell(Text(rowInfo.map[txt]));
     }).toList();
   }
 
   @override //根据索引获取内容行
   DataRow getRow(int index) {
-    final Info row = _rowsMetaInfo[index];
+    final Info row = _rowsInfo[index];
     return DataRow.byIndex(
       index: index,
-      cells: _getDataCells(row),
+      cells: _getRow(row),
     );
   }
 
@@ -156,7 +158,7 @@ class BodyTableSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override //有多少行
-  int get rowCount => _rowsMetaInfo.length;
+  int get rowCount => _rowsInfo.length;
 
   @override //选中的行数
   int get selectedRowCount => 0;
