@@ -105,6 +105,7 @@ class MyTable extends DataTableSource {
     final DanWeiFenShu bean = _beans[index];
     return DataRow.byIndex(
       index: index,
+      selected: false,
       cells: <DataCell>[
         DataCell(Text('${bean.danWei.name}')),
         DataCell(Text('${bean.qiyezhichaFenShu}')),
@@ -112,6 +113,7 @@ class MyTable extends DataTableSource {
         DataCell(Text('${bean.shijipinjiaFenShu}')),
         DataCell(Text('${bean.beiZhu}')),
       ],
+      onSelectChanged: (val){},
     );
   }
 

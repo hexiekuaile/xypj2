@@ -16,15 +16,11 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
   Widget _drawer;
   Widget _body;
   Dio _dio;
-  List<Entity> _metaInfos; //基础信息列表，其name生成 菜单列表
-  Entity _selectedMetaInfo; //选中的基础信息，即选中的菜单，其map中key值 生成 body区的表格 的列名
-  List<Entity> _rowsInfo; //body区的表格 对应的 信息列表，bodyTable的行数据
+  Entity _selectedMetaInfo;
+  List<Entity> _rowsInfo; //bodyTable的行数据
   MyDataSource _dataSource;
-  Strings strings; //国际化字符串，从中获取 字符串
-  List<Widget> menuButtons; //菜单右边的几个按钮
-
-  int _sortColumnIndex;
-  bool _sortAscending = true;
+  Strings strings;
+  List<Widget> menuButtons;
 
   @override
   bool get wantKeepAlive => true; //切换页面时，保持状态不刷新
@@ -66,14 +62,6 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
   List<Widget> buildMenuButtons() {
     return <Widget>[
       MyButton(
-          iconData: Icons.refresh,
-          label: strings.valueOf("commitInfo.label_refreshButton"),
-          onPressed: () {
-            if (_body == null || _rowsInfo == null) return;
-            _body = _startBuildBodyTable();
-            setState(() {});
-          }),
-      MyButton(
           iconData: Icons.add,
           label: strings.valueOf("commitInfo.label_insertButton"),
           onPressed: () {
@@ -88,7 +76,10 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
             else
               _rowsInfo.insert(_dataSource._indexCurrent, e);
 
-            _body = _buildBodyTable();
+            List<String> _colNames = _selectedMetaInfo.map.keys.toList();
+            _colNames..remove('name')..remove('type');
+            _dataSource = MyDataSource(_colNames, _rowsInfo, _saveRow);
+            _body = _buildBodyTable(_colNames, _dataSource);
             setState(() {});
           }),
       MyButton(
@@ -98,12 +89,8 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
             if (_body == null || _rowsInfo == null) return;
             if (_dataSource._indexCurrent != _dataSource._editingIndex) return;
 
-            if (_dataSource._editingInfo.id == null) {
-              _saveRow('insert',
-                  tempEntity: _dataSource._editingInfo, entity: _rowsInfo.elementAt(_dataSource._editingIndex));
-            } else {
-              _saveRow('update', tempEntity: _dataSource._editingInfo);
-            }
+            String act = _dataSource._editingInfo.id == null ? 'insert' : 'update';
+            _saveRow(act, entity: _dataSource._editingInfo);
             _dataSource._editingInfo = null;
             _dataSource._editingIndex = -1;
           }),
@@ -115,8 +102,10 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
               Entity entity = _rowsInfo.elementAt(_dataSource._indexCurrent);
               //直接删除，更新UI
               _rowsInfo.removeAt(_dataSource._indexCurrent);
-
-              _body = _buildBodyTable();
+              List<String> _colNames = _selectedMetaInfo.map.keys.toList();
+              _colNames..remove('name')..remove('type');
+              _dataSource = MyDataSource(_colNames, _rowsInfo, _saveRow);
+              _body = _buildBodyTable(_colNames, _dataSource);
               setState(() {});
               //从服务器删除
               if (entity.id != null) {
@@ -139,8 +128,7 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
             return Drawer(child: Center(child: CircularProgressIndicator()));
           } else if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) throw Exception(snapshot.error);
-            _metaInfos = snapshot.data;
-            return _buildMenus();
+            return _buildMenus(snapshot.data);
           }
         } catch (ex) {
           _showSnackBar(ex.toString());
@@ -166,9 +154,9 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
     return _menusInfo ?? <Entity>[];
   }
 
-  Widget _buildMenus() {
+  Widget _buildMenus(List<Entity> menusInfo) {
     List<ListTile> listTiles;
-    listTiles = _metaInfos.map<ListTile>((m) {
+    listTiles = menusInfo.map<ListTile>((m) {
       return ListTile(
           leading: Icon(Icons.arrow_forward),
           title: Text(m.map['name'] ?? 'null'),
@@ -178,7 +166,7 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
             if (m.map['name'] != null)
               setState(() {
                 _selectedMetaInfo = m;
-                _body = _startBuildBodyTable();
+                _body = _startBuildBodyTable(m);
               });
           });
     }).toList();
@@ -196,9 +184,9 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
     ConnectionState.active	连接到异步任务并开始交互
     ConnectionState.done	异步任务中止
     */
-  FutureBuilder<List<Entity>> _startBuildBodyTable() {
+  FutureBuilder<List<Entity>> _startBuildBodyTable(Entity selectedMetaInfo) {
     return FutureBuilder<List<Entity>>(
-      future: _fetchRowsInfo(),
+      future: _fetchRowsInfo(selectedMetaInfo),
       builder: (BuildContext context, AsyncSnapshot<List<Entity>> snapshot) {
         try {
           if (snapshot.connectionState == ConnectionState.none ||
@@ -208,8 +196,10 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
           } else if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) throw Exception(snapshot.error);
             _rowsInfo = snapshot.data;
-
-            return _buildBodyTable();
+            List<String> _colNames = _selectedMetaInfo.map.keys.toList();
+            _colNames..remove('name')..remove('type');
+            _dataSource = MyDataSource(_colNames, _rowsInfo, _saveRow);
+            return _buildBodyTable(_colNames, _dataSource);
           }
         } catch (ex) {
           _showSnackBar(ex);
@@ -221,10 +211,10 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
 
   //通过选定的基础信息名称，从数据库中提取基础信息的一般信息，填充到body中的表。
   //例如，通过 评价指标 这个名称，获取所有的评价指标
-  Future<List<Entity>> _fetchRowsInfo() async {
+  Future<List<Entity>> _fetchRowsInfo(Entity seletedMetaInfo) async {
     List<Entity> _bodyTableInfo;
     try {
-      var response = await _dio.get(strings.valueOf("commitInfo.URL_findInfoByType") + _selectedMetaInfo.map['name']);
+      var response = await _dio.get(strings.valueOf("commitInfo.URL_findInfoByType") + seletedMetaInfo.map['name']);
       if (response.statusCode == HttpStatus.ok)
         _bodyTableInfo = (response.data as List<dynamic>).map<Entity>((m) {
           return Entity.fromJson((m as Map<String, dynamic>));
@@ -235,75 +225,64 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
     return _bodyTableInfo ?? <Entity>[];
   }
 
-  //排序
-  void _sort<T>(Comparable<T> getField(Entity d), int columnIndex, bool ascending) {
-    _dataSource._sort<T>(getField, ascending);
-    _sortColumnIndex = columnIndex;
-    _sortAscending = ascending;
-    setState(() {});
-  }
-
-  Widget _buildBodyTable() {
-    int _defalutRowPageCount = 10; //默认行数/页
-
+  Widget _updateBodyTable() {
     List<String> _colNames = _selectedMetaInfo.map.keys.toList();
     _colNames..remove('type')..remove('name');
     _dataSource = MyDataSource(_colNames, _rowsInfo, _saveRow);
+    return _buildBodyTable(_colNames, _dataSource);
+  }
+
+  Widget _buildBodyTable(List<String> _colNames, DataTableSource _dataSource) {
+    int _defalutRowPageCount = 10; //默认行数/页
+
     return SingleChildScrollView(
         child: PaginatedDataTable(
-      header: Text(''),
+      header: Text(strings.valueOf("commitInfo.headerText")),
       rowsPerPage: _defalutRowPageCount,
-      initialFirstRowIndex: 0,
-      availableRowsPerPage: [10, 20],
-      sortAscending: _sortAscending,
-      sortColumnIndex: _sortColumnIndex,
-      source: _dataSource,
-      columns: _colNames.map<DataColumn>((txt) {
-        return DataColumn(
-            label: Text(
-              txt,
-              style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
-            ),
-            onSort: (int columnIndex, bool ascending) =>
-                _sort<String>((Entity d) => d.map[txt].toString(), columnIndex, ascending));
-      }).toList(),
       onRowsPerPageChanged: (value) {
         setState(() {
           _defalutRowPageCount = value;
         });
       },
-      onPageChanged: (value) {},
+      initialFirstRowIndex: 0,
+      availableRowsPerPage: [10, 20],
+      onPageChanged: (value) {
+        // print('翻页： $value');
+      },
+      columns: _colNames.map<DataColumn>((txt) {
+        return DataColumn(label: Text(txt));
+      }).toList(),
+      source: _dataSource,
     ));
   }
 
-  //保存修改变化的行数据到服务器,
-  //entit是修改的实体，tempEntity保存修改变化的值，不把全部值上传保存
-  //id是将要删除的entity的id
-  Future<dynamic> _saveRow(String act, {Entity tempEntity, Entity entity, String id}) async {
+  //保存行数据到服务器
+  Future<int> _saveRow(String act, {Entity entity, String id}) async {
     String t = strings.valueOf("commitInfo.tip_saveFail"); //提示信息
-    dynamic n; //返回值
+    int n = -1; //返回值0,1表示成功，-1表示失败
     String _URL_saveRow = strings.valueOf("commitInfo.URL_saveRow");
-    Response response;
+    var response;
     try {
       switch (act) {
         case 'insert':
           {
-            response = await _dio.post(_URL_saveRow, data: tempEntity);
+            response = await _dio.post(_URL_saveRow, data: entity);
             t = strings.valueOf("commitInfo.tip_insertSuccess");
-            entity.id = response.data;
-            n = response.data;
+            n = 1;
           }
           break;
         case 'update':
           {
-            response = await _dio.put(_URL_saveRow, data: tempEntity);
+            response = await _dio.put(_URL_saveRow, data: entity);
             t = strings.valueOf("commitInfo.tip_saveSuccess");
+            n = 0;
           }
           break;
         case 'delete':
           {
             response = await _dio.delete(_URL_saveRow + id);
             t = strings.valueOf("commitInfo.tip_deleteSuccess");
+            n = 1;
           }
           break;
       }
@@ -400,8 +379,12 @@ class MyDataSource extends DataTableSource {
               _indexCurrent = index;
               //鼠标点击进入录入框
             },
-            onEditingComplete: () {},
-            onFieldSubmitted: (val) {},
+            onEditingComplete: () {
+              //print("onEditingComplete");
+            },
+            onFieldSubmitted: (val) {
+              //print("OnFieldSubmitted");
+            },
           ), onTap: () {
         //鼠标点击单元格(没有进入录入框)
       });
@@ -416,18 +399,4 @@ class MyDataSource extends DataTableSource {
 
   @override //选中的行数
   int get selectedRowCount => 0;
-
-  void _sort<T>(Comparable<T> getField(Entity d), bool ascending) {
-    _rowsInfo.sort((Entity a, Entity b) {
-      if (!ascending) {
-        final Entity c = a;
-        a = b;
-        b = c;
-      }
-      final Comparable<T> aValue = getField(a);
-      final Comparable<T> bValue = getField(b);
-      return Comparable.compare(aValue, bValue);
-    });
-    notifyListeners();
-  }
 }

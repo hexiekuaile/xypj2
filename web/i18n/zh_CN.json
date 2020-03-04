@@ -2,8 +2,8 @@
   "supportedLocales": "zh_CN,en_US,ja_JP",
   "pushedTimes": "按键次数{0}xxx{1}",
   "firstPage": "xx市环境信用系统",
-  "a": {
-    "firstPage": "首页",
+  "main": {
+    "firstPage": "首页1",
     "c": {
       "d": "sdf"
     }
@@ -16,6 +16,17 @@
   "commitInfo": {
     "commit": "录入  ",
     "info": "信息",
-    "URL_FindMetaInfoByType": "http://localhost:1112/metaInfo/type/"
+    "metaInfo": "基础信息",
+    "tip_saveSuccess": "保存成功 ! ",
+    "tip_insertSuccess": "保存成功 ! ",
+    "tip_deleteSuccess": "删除成功 ! ",
+    "tip_saveFail": "数据提交失败 ! ",
+    "label_refreshButton": "刷新数据",
+    "label_insertButton": "插入一行",
+    "label_saveButton": "保存当前行",
+    "label_removeButton": "删除当前行 ",
+    "URL_findMenusInfo": "http://localhost:1112/entity/map/map.type/基础信息",
+    "URL_findInfoByType": "http://localhost:1112/entity/map/map.type/",
+    "URL_saveRow": "http://localhost:1112/entity/"
   }
 }
