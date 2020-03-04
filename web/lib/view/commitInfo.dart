@@ -62,7 +62,7 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
         actions: menuButtons,
       );
 
-  //建造菜单右边的几个动作按钮：插入、保存、删除
+  //建造菜单右边的几个动作按钮：刷新、插入、保存、删除
   List<Widget> buildMenuButtons() {
     return <Widget>[
       MyButton(
@@ -110,8 +110,10 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
       MyButton(
           iconData: Icons.remove,
           label: strings.valueOf("commitInfo.label_removeButton"),
-          onPressed: () {
+          onPressed: () async {
             if (_body != null && _dataSource._indexCurrent > -1) {
+              bool b = await _showDeleteConfirmDialog();
+              if (!b) return;
               Entity entity = _rowsInfo.elementAt(_dataSource._indexCurrent);
               //直接删除，更新UI
               _rowsInfo.removeAt(_dataSource._indexCurrent);
@@ -328,6 +330,32 @@ class _CommitInfoState extends State<CommitInfo> with AutomaticKeepAliveClientMi
       duration: Duration(seconds: 5),
     );
     Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  // 弹出对话框
+  Future<bool> _showDeleteConfirmDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(strings.valueOf('commitInfo.tip_deleteTitle')),
+          content: Text(strings.valueOf('commitInfo.tip_deleteContent')),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(strings.valueOf('commitInfo.tip_deleteFalse')),
+              onPressed: () => Navigator.of(context).pop(false), // 关闭对话框
+            ),
+            FlatButton(
+              child: Text(strings.valueOf('commitInfo.tip_deleteTrue')),
+              onPressed: () {
+                //关闭对话框并返回true
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

@@ -25,8 +25,12 @@
     "label_insertButton": "插入一行",
     "label_saveButton": "保存当前行",
     "label_removeButton": "删除当前行 ",
-    "URL_findMenusInfo": "http://localhost:1112/entity/map/map.type/基础信息",
-    "URL_findInfoByType": "http://localhost:1112/entity/map/map.type/",
-    "URL_saveRow": "http://localhost:1112/entity/"
+    "tip_deleteTitle": "提示",
+    "tip_deleteContent": "您确定要删除吗?",
+    "tip_deleteFalse": "取消",
+    "tip_deleteTrue": "删除",
+    "URL_findMenusInfo": "http://172.16.40.101:1112/entity/map/map.type/基础信息",
+    "URL_findInfoByType": "http://172.16.40.101:1112/entity/map/map.type/",
+    "URL_saveRow": "http://172.16.40.101:1112/entity/"
   }
 }
