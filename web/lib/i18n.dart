@@ -68,7 +68,20 @@ class Strings {
       value = _map[key].toString();
     }
     //支持字符串替换
-    if (args != null && namedArgs != null) value = _interpolateValue(value, args, namedArgs);
+    if (args != null || namedArgs != null) value = _interpolateValue(value, args, namedArgs);
+
+    //增加变量功能：正则表达式，正向肯定预查、反向肯定预查，比如用ip=127.0.0.1 替换 a=http://<<ip>>/entity/ 中的ip
+    RegExp reg = new RegExp(r"(?<=<<).*?(?=>>)");
+    Iterable<Match> matches = reg.allMatches(value);
+    if (matches.isNotEmpty) {
+      matches.forEach((Match m) {
+        String s2 = valueOf(m.group(0));
+        String s1 = '<<${m.group(0)}>>';
+        //print('$s1 $s2');
+        value = value.replaceAll(s1, s2);
+      });
+    }
+
     return value;
   }
 
@@ -91,9 +104,7 @@ class I18nDelegate extends LocalizationsDelegate<Strings> {
   //当前区域
   Locale _loc;
   //支持的国际化区域，对应提供的国际化json字符串文件
-  static List<Locale> _supportedLocales = [
-    Locale('zh', 'CN')
-  ];
+  static List<Locale> _supportedLocales = [Locale('zh', 'CN')];
 
   I18nDelegate(this._loc);
 

@@ -1,12 +1,9 @@
 {
   "supportedLocales": "zh_CN,en_US,ja_JP",
-  "pushedTimes": "按键次数{0}xxx{1}",
+  "ip": "172.16.40.101:1112",
   "firstPage": "xx市环境信用系统",
   "main": {
-    "firstPage": "首页1",
-    "c": {
-      "d": "sdf"
-    }
+    "firstPage": "首页"
   },
   "commitMetaInfo": {
     "add": "增加",
@@ -29,8 +26,8 @@
     "tip_deleteContent": "您确定要删除吗?",
     "tip_deleteFalse": "取消",
     "tip_deleteTrue": "删除",
-    "URL_findMenusInfo": "http://172.16.40.101:1112/entity/map/map.type/基础信息",
-    "URL_findInfoByType": "http://172.16.40.101:1112/entity/map/map.type/",
-    "URL_saveRow": "http://172.16.40.101:1112/entity/"
+    "URL_findMenusInfo": "http://<<ip>>/entity/map/map.type/基础信息",
+    "URL_findInfoByType": "http://<<ip>>/entity/map/map.type/",
+    "URL_saveRow": "http://<<ip>>/entity/"
   }
 }
