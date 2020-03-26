@@ -1,6 +1,7 @@
 package com.yw.xypj2.dao;
 
 import com.yw.xypj2.domain.Entity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,10 @@ public interface EntityRepository extends MongoRepository<Entity, String> {
     // @Query(value = "{'map.type' : ?0}")
     // @Query("{'map.type' : ?0}")
     @Query("{?0 : ?1}")
-    List<Entity> findByMap(String prop, String type);
+    List<Entity> findByMap(String key, String value);
+
+    @Query("{?0 : ?1}")
+    List<Entity> findPageableByMap(String key, String value, Pageable pageable);
 
 
 }

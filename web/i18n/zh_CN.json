@@ -26,7 +26,9 @@
     "tip_deleteContent": "您确定要删除吗?",
     "tip_deleteFalse": "取消",
     "tip_deleteTrue": "删除",
-    "URL_findMenusInfo": "http://<<ip>>/entity/map/map.type/基础信息",
+
+    "URL_findMenus": "http://<<ip>>/entity/map/map.type/基础信息",
+    "URL_findInfoCount": "http://<<ip>>/entity/map/count/type/",
     "URL_findInfoByType": "http://<<ip>>/entity/map/map.type/",
     "URL_saveRow": "http://<<ip>>/entity/"
   }

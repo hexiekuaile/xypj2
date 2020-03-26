@@ -11,6 +11,7 @@ package com.yw.xypj2.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 
@@ -18,10 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @ToString
 public class Entity {
     @Id
     private String id;
     private Map<String, Object> map = new HashMap<String, Object>();
+
 }

@@ -44,7 +44,7 @@ class Strings {
 
   String valueOf(String key, {List<String> args, Map<String, dynamic> namedArgs}) {
     String value;
-    //支持json嵌套，比如key=a.b.c
+    //1、支持嵌套功能：比如key=a.b.c
     if (key.contains('.')) {
       List<String> list = key.split('.');
       dynamic map = _map;
@@ -67,10 +67,10 @@ class Strings {
       if (!_map.containsKey(key)) return key;
       value = _map[key].toString();
     }
-    //支持字符串替换
+    //2、支持插值功能：
     if (args != null || namedArgs != null) value = _interpolateValue(value, args, namedArgs);
 
-    //增加变量功能：正则表达式，正向肯定预查、反向肯定预查，比如用ip=127.0.0.1 替换 a=http://<<ip>>/entity/ 中的ip
+    //3、增加变量功能：正则表达式，正向肯定预查、反向肯定预查，比如用ip=127.0.0.1 替换 a=http://<<ip>>/entity/ 中的ip
     RegExp reg = new RegExp(r"(?<=<<).*?(?=>>)");
     Iterable<Match> matches = reg.allMatches(value);
     if (matches.isNotEmpty) {
@@ -85,7 +85,8 @@ class Strings {
     return value;
   }
 
-  //支持用字符串替换 {0} {1}等等，序号从0开始;支持用Map value替换::Map key::
+  //插值功能：
+  // 支持用字符串替换 {0} {1}等等，序号从0开始;支持用Map value替换::Map key::
   //例子： "pushedTimes": "按键次数{0}xxx{1}"
   String _interpolateValue(String value, List<String> args, Map<String, dynamic> namedArgs) {
     for (int i = 0; i < (args?.length ?? 0); i++) {

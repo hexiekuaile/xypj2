@@ -14,8 +14,7 @@ class ViewDanWeiFenShu extends StatefulWidget {
   _ViewDanWeiFenShuState createState() => _ViewDanWeiFenShuState();
 }
 
-class _ViewDanWeiFenShuState extends State<ViewDanWeiFenShu>
-    with AutomaticKeepAliveClientMixin {
+class _ViewDanWeiFenShuState extends State<ViewDanWeiFenShu> with AutomaticKeepAliveClientMixin {
   // //默认一页行数
   int _defalutRowPageCount = PaginatedDataTable.defaultRowsPerPage;
 
@@ -40,7 +39,7 @@ class _ViewDanWeiFenShuState extends State<ViewDanWeiFenShu>
   }
 
   @override
-  bool get wantKeepAlive => true;//切换页面时，保持页面状态，不再刷新
+  bool get wantKeepAlive => true; //切换页面时，保持页面状态，不再刷新
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +49,7 @@ class _ViewDanWeiFenShuState extends State<ViewDanWeiFenShu>
   FutureBuilder<List<DanWeiFenShu>> buildFutureBuilder() {
     return new FutureBuilder<List<DanWeiFenShu>>(
       future: fetchBeans(),
-      builder:
-          (BuildContext context, AsyncSnapshot<List<DanWeiFenShu>> snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<List<DanWeiFenShu>> snapshot) {
         if (snapshot.connectionState == ConnectionState.none ||
             snapshot.connectionState == ConnectionState.active ||
             snapshot.connectionState == ConnectionState.waiting) {
@@ -84,7 +82,7 @@ class _ViewDanWeiFenShuState extends State<ViewDanWeiFenShu>
         });
       },
       initialFirstRowIndex: 0,
-      availableRowsPerPage: [5, 10],
+      availableRowsPerPage: [5,10, 20],
       onPageChanged: (value) {
         //print('翻页： $value');
       },
@@ -113,7 +111,7 @@ class MyTable extends DataTableSource {
         DataCell(Text('${bean.shijipinjiaFenShu}')),
         DataCell(Text('${bean.beiZhu}')),
       ],
-      onSelectChanged: (val){},
+      onSelectChanged: (val) {},
     );
   }
 
@@ -141,8 +139,7 @@ List<DanWeiFenShu> _parseBeans(String responseBody) {
   //jsonDecode(s);json.decode(responseBody)
   var listDynamic = jsonDecode(responseBody); // List<dynamic>
   //显式类型转换 List<dynamic>   ->  List<Map<String, dynamic>>
-  List<Map<String, dynamic>> listMap =
-      new List<Map<String, dynamic>>.from(listDynamic);
+  List<Map<String, dynamic>> listMap = new List<Map<String, dynamic>>.from(listDynamic);
 
   //按照单位名称排序
   //listMap.sort((a, b) => a['danWei']['name'].compareTo(b['danWei']['name']));

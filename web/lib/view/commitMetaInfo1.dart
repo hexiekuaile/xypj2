@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:web/m.dart';
 import 'package:web/i18n.dart';
-import 'package:web/domain/entity.dart';
+import 'package:web/domain/info.dart';
 
 //提交保存基础信息视图
 class CommitMetaInfo extends StatefulWidget {
@@ -13,38 +13,25 @@ class CommitMetaInfo extends StatefulWidget {
 
 class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAliveClientMixin {
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
-  List<Widget> rows = <Widget>[];
+  var rows = <Widget>[];
   String _title;
-
-  @override
-  bool get wantKeepAlive => true; //切换页面时，保持状态不刷新
 
   @override
   void initState() {
     super.initState();
     rows.add(row_title());
     rows.add(row_add());
-    rows.add(new MetaRow(UniqueKey(), removeMetaRow));
+    rows.add(new Row_meta(UniqueKey(), removeMetaRow));
     rows.add(row_save());
+    // print('基础信息视图 init');
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      //可以上下滚动视图
-      padding: const EdgeInsets.all(16.0),
-      child: new Form(
-        key: _formKey,
-        child: new Column(
-          children: rows,
-        ),
-      ),
-    );
-  }
+  bool get wantKeepAlive => true; //切换页面时，保持状态不刷新
 
-  void _startSave() {
+  void _formSubmitted() {
     var _form = _formKey.currentState;
-    //执行每个输入框的validate方法
+
     if (_form.validate()) {
       _form.save(); //执行每个输入框的save方法
       _post(_handDatas()); //上传到服务器
@@ -54,17 +41,18 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
   //收集处理录入的数据
   //Map<String, dynamic> _handDatas() {
   dynamic _handDatas() {
-    Entity entity = new Entity(map: Map<String, dynamic>());
-    entity.map['name'] = _title;
-    entity.map['type'] = "基础信息";
+    Info info = new Info();
+    info.name = _title;
+    info.type = "基础信息";
+    info.map = Map<String, dynamic>();
 
     List<Widget> lw = rows.sublist(2, rows.length - 1);
     lw.forEach((w) {
-      MetaRow rm = w as MetaRow;
+      Row_meta rm = w as Row_meta;
       //info.map['${rm._name}'] = rm._type;
-      entity.map[rm._name] = rm._type;
+      info.map[rm._name] = rm._type;
     });
-    return entity;
+    return info;
   }
 
 //上传到服务器保存录入的基础信息
@@ -101,6 +89,20 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
     setState(() {});
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      //可以上下滚动视图
+      padding: const EdgeInsets.all(16.0),
+      child: new Form(
+        key: _formKey,
+        child: new Column(
+          children: rows,
+        ),
+      ),
+    );
+  }
+
   //标题行
   Widget row_title() {
     return Row(
@@ -112,8 +114,10 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
           textAlign: TextAlign.right,
           style: new TextStyle(
             fontSize: 20.0,
+            //字体大小
             fontWeight: FontWeight.bold,
-            color: Colors.blue,
+            //字体粗细  粗体和正常
+            color: Colors.blue, //文字颜色
           ),
         )),
         Expanded(
@@ -124,7 +128,8 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
               fontSize: 20.0,
               //字体大小
               fontWeight: FontWeight.bold,
-              color: Colors.blue,
+              //字体粗细  粗体和正常
+              color: Colors.blue, //文字颜色
             ),
             validator: (val) {
               if (val.trim().isEmpty)
@@ -142,8 +147,10 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
           '的基础信息',
           style: new TextStyle(
             fontSize: 20.0,
+            //字体大小
             fontWeight: FontWeight.bold,
-            color: Colors.blue,
+            //字体粗细  粗体和正常
+            color: Colors.blue, //文字颜色
           ),
         )),
       ],
@@ -162,7 +169,7 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
         textColor: Colors.white,
         onPressed: () {
           setState(() {
-            rows.insert(rows.length - 1, MetaRow(UniqueKey(), removeMetaRow));
+            rows.insert(rows.length - 1, Row_meta(UniqueKey(), removeMetaRow));
           });
         },
       ),
@@ -179,25 +186,25 @@ class _CommitMetaInfoState extends State<CommitMetaInfo> with AutomaticKeepAlive
         label: Text("保存"),
         color: Colors.blue,
         textColor: Colors.white,
-        onPressed: this._startSave,
+        onPressed: this._formSubmitted,
       ),
     );
   }
 }
 
 //基础信息行类
-class MetaRow extends StatefulWidget {
+class Row_meta extends StatefulWidget {
   String _name;
   String _type = '字符串';
   Function callback;
 
-  MetaRow(Key key, @required this.callback) : super(key: key);
+  Row_meta(Key key, @required this.callback) : super(key: key);
 
   @override
   _RowMetaState createState() => _RowMetaState();
 }
 
-class _RowMetaState extends State<MetaRow> {
+class _RowMetaState extends State<Row_meta> {
   @override
   Widget build(BuildContext context) {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
@@ -224,7 +231,10 @@ class _RowMetaState extends State<MetaRow> {
         value: widget._type,
         style: TextStyle(color: Colors.blue),
         //icon: Icon(Icons.sort),
-        items: <String>['字符串', '数字'].map<DropdownMenuItem<String>>((String value) {
+        items: <String>[
+          '字符串',
+          '数字'
+        ].map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(value),

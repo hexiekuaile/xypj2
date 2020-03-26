@@ -14,7 +14,7 @@ import 'i18n.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  I18nDelegate i18nDelegate = new I18nDelegate(null);
+  I18nDelegate i18nDelegate = new I18nDelegate(Locale('zh', 'CN'));
 
   // This widget is the root of your application.
   @override
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage( i18nDelegate),
+      home: HomePage(i18nDelegate),
       supportedLocales: I18nDelegate.supportedLocales,
       localizationsDelegates: [
         //修改这个变量、setState，可以更改UI语言文字
@@ -39,7 +39,7 @@ class HomePage extends StatefulWidget {
   I18nDelegate i18nDelegate;
   @override
   _HomePageState createState() => _HomePageState();
-  HomePage( i18nDelegate);
+  HomePage(i18nDelegate);
 }
 
 class _HomePageState extends State<HomePage> {
@@ -87,9 +87,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void onTap(int index) {
-    if (index == 0) {setState(() {
-      widget.i18nDelegate = new I18nDelegate(null);
-    });}
+    if (index == 0) {
+      setState(() {
+        widget.i18nDelegate = new I18nDelegate(null);
+      });
+    }
     pageController.jumpToPage(index);
   }
 

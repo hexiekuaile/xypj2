@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.serviceregistry.Registration;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -51,16 +54,52 @@ public class EntityController {
         return ResponseEntity.ok(ls);
     }
 
+    @GetMapping("/map/count/{key}/{value}")
+    public ResponseEntity<Long> count(@PathVariable("key") String key, @PathVariable("value") String value) {
+
+        Entity e = new Entity();
+        e.getMap().put(key, value);
+        //log.info("0000 "+key+" "+value);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withMatcher("map." + key, match -> match.exact());
+
+        long c = entityRep.count(Example.of(e, matcher));
+
+        //log.info("== " + registration.getInstanceId());
+        //log.info("==基础信息： " + ls.get(0).getMap());
+       // log.info("---" + c);
+        return ResponseEntity.ok(c);
+    }
+
     /**
-     * @param attribute
+     * 通过map中的key-value查询实体
+     *
+     * @param key
      * @param value
      * @return
      */
-    @GetMapping("/map/{attribute}/{value}")
-    public ResponseEntity<List<Entity>> findByMap(@PathVariable("attribute") String attribute, @PathVariable("value") String value) {
-        //log.info("== " +attribute+" "+ value);
-        List<Entity> list = entityRep.findByMap(attribute, value);
+    @GetMapping("/map/{key}/{value}")
+    public ResponseEntity<List<Entity>> findByMap(@PathVariable("key") String key, @PathVariable("value") String value) {
+        //log.info("== " +key+" "+ value);
+        List<Entity> list = entityRep.findByMap(key, value);
         //log.info("== " + list.size());
+        return ResponseEntity.ok(list);
+    }
+
+    /**
+     * 通过map中的key-value分页查询实体
+     *
+     * @param key
+     * @param value
+     * @param pageCount
+     * @param countPerPage
+     * @return
+     */
+    @GetMapping("/map/{key}/{value}/{pageCount}/{countPerPage}")
+    public ResponseEntity<List<Entity>> findPageableByMap(@PathVariable("key") String key, @PathVariable("value") String value, @PathVariable("pageCount") int pageCount, @PathVariable("countPerPage") int countPerPage) {
+        //log.info("== " + key + " " + value);
+        List<Entity> list = entityRep.findPageableByMap(key, value, PageRequest.of(pageCount, countPerPage));
+       // log.info("== " + list.size());
         return ResponseEntity.ok(list);
     }
 
@@ -81,12 +120,12 @@ public class EntityController {
     }
 
     /**
-     * 更新
+     * 部分更新
      *
      * @param e
      * @return
      */
-    @PutMapping("/")
+    @PatchMapping("/")
     public ResponseEntity<Void> put(@RequestBody Entity e) {
       /*  Entity en = entityRep.findById(e.getId()).get();
         e.getMap().forEach((k, v) -> {
